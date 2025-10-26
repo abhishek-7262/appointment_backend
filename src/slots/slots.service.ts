@@ -1,4 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Slot, SlotDocument } from './slots.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
-export class SlotsService {}
+export class SlotsService {
+    constructor(@InjectModel(Slot.name) private SlotModel:Model<SlotDocument>){}
+
+    async createSlot(){}
+}
