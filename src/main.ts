@@ -11,7 +11,11 @@ async function bootstrap() {
     credentials: true,               // Only if you’re using cookies or auth headers
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+      whitelist: true,
+      transform: true, // ✅ enables auto type conversion
+      forbidNonWhitelisted: true,
+    }));
 
   await app.listen(process.env.PORT ?? 3000);
 }
