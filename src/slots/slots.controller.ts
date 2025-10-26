@@ -2,6 +2,7 @@ import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { SlotsService } from './slots.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateSlotDto } from './dto/create-slot.dto';
+import { GetSlotsDto } from './dto/getAll-slot.dto';
 
 @Controller('slots')
 export class SlotsController {
@@ -21,5 +22,10 @@ export class SlotsController {
             message: 'Slot created successfully',
             data: slot,
         };
+    }
+
+    @Post('getAll')
+    async getAllSlots(@Body() dto:GetSlotsDto){
+        return this.slotsService.getAllSlots(dto)
     }
 }
