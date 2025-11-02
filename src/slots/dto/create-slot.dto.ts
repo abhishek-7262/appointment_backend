@@ -1,28 +1,29 @@
-import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, ValidateNested, IsNumber, ArrayMinSize } from 'class-validator';
-
-export class SlotDto {
-  @IsNotEmpty({ message: 'Start time is required' })
-  @IsString()
-  startTime: string;
-
-  @IsNotEmpty({ message: 'End time is required' })
-  @IsString()
-  endTime: string;
-}
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateSlotDto {
   @IsNotEmpty({ message: 'Date is required' })
   @IsString()
-  date: string;
+  date: string; // e.g. "2025-12-01"
+
+  @IsNotEmpty({ message: 'Start time is required' })
+  @IsString()
+  startTime: string; // e.g. "10:00"
+
+  @IsNotEmpty({ message: 'End time is required' })
+  @IsString()
+  endTime: string; // e.g. "10:30"
 
   @IsNotEmpty({ message: 'Duration is required' })
   @IsNumber()
-  duration: number;
+  duration: number; // in minutes (e.g. 30)
 
-  @IsArray()
-  @ArrayMinSize(1, { message: 'At least one slot is required' })
-  @ValidateNested({ each: true })
-  @Type(() => SlotDto)
-  slots: SlotDto[];
+  @IsOptional()
+  @IsBoolean()
+  isBooked?: boolean; // optional, defaults to false in schema
 }

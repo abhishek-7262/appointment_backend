@@ -4,32 +4,25 @@ import { User } from 'src/users/users.schema';
 
 export type SlotDocument = Slot & Document;
 
-// Subdocument schema for individual slots
-@Schema({ _id: false }) // prevents extra _id for each sub-slot
-export class SubSlot {
-  @Prop({ required: true })
-  startTime: string;
-
-  @Prop({ required: true })
-  endTime: string;
-}
-
-export const SubSlotSchema = SchemaFactory.createForClass(SubSlot);
-
-// Main Slot schema
 @Schema({ timestamps: true })
 export class Slot {
   @Prop({ required: true })
-  date: string;
+  date: string; // e.g. "2025-12-01"
 
   @Prop({ required: true })
-  duration: number;
+  startTime: string; // e.g. "10:00"
 
-  @Prop({ type: [SubSlotSchema], required: true })
-  slots: SubSlot[];
+  @Prop({ required: true })
+  endTime: string; // e.g. "10:30"
+
+  @Prop({ required: true })
+  duration: number; // in minutes, e.g. 30
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  createdBy: User | Types.ObjectId;
+  createdBy: User | Types.ObjectId; // clinic/admin who created the slot
+
+  @Prop({ default: false })
+  isBooked: boolean; // marks if booked or not
 }
 
 export const SlotSchema = SchemaFactory.createForClass(Slot);
