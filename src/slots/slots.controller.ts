@@ -15,9 +15,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { GetSlotsDto } from './dto/getAll-slot.dto';
 import { UpdateSlotDto } from './dto/update-slot.dto';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 
-@UseInterceptors(CacheInterceptor)
 @Controller('slots')
 export class SlotsController {
   constructor(private readonly slotsService: SlotsService) {}
