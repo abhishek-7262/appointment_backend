@@ -8,24 +8,10 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SlotsModule } from './slots/slots.module';
 import { BookingsModule } from './bookings/bookings.module';
-
-import { redisStore } from 'cache-manager-redis-yet';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useFactory: async () => ({
-        store: await redisStore({
-          socket: {
-            host: 'localhost',
-            port: 6379,
-          },
-          ttl: 60 * 5, // default TTL = 5 minutes
-        }),
-      }),
-    }),
-
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => ({
@@ -39,6 +25,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       }),
     }),
 
+    RedisModule,
     UsersModule,
     AuthModule,
     SlotsModule,

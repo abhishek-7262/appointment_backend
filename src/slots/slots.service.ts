@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Slot, SlotDocument } from './slots.schema';
@@ -10,10 +11,14 @@ import { Model } from 'mongoose';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { UpdateSlotDto } from './dto/update-slot.dto';
 import { GetSlotsDto } from './dto/getAll-slot.dto';
+import Redis from 'ioredis';
 
 @Injectable()
 export class SlotsService {
-  constructor(@InjectModel(Slot.name) private slotModel: Model<SlotDocument>) {}
+  constructor(
+    @InjectModel(Slot.name) private slotModel: Model<SlotDocument>,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+  ) {}
 
   // ✅ Create single slot (for a specific date/time)
   async createSlot(
@@ -22,7 +27,7 @@ export class SlotsService {
   ): Promise<Slot> {
     const { date, startTime, endTime } = createSlotDto;
 
-    // 🧠 Optional: Prevent duplicate slot creation for same time
+    // Prevent duplicate slot creation for same time
     const existing = await this.slotModel.findOne({
       date,
       startTime,
@@ -37,7 +42,25 @@ export class SlotsService {
       createdBy: userId,
     });
 
-    return await newSlot.save();
+    const savedSlot = await newSlot.save();
+
+    // ✅ Push to Redis
+    // ✅ Cast _id and store in Redis
+    // const slotId = (savedSlot._id as any).toString();
+    // await this.cacheManager.set(`slot:${slotId}`, savedSlot.toObject(), 0); // 0 = no TTL
+
+    // const testJson = {
+    //   id: '123',
+    //   name: 'Test Slot',
+    //   date: '2025-11-08',
+    //   startTime: '10:00',
+    //   endTime: '11:00',
+    //   createdBy: userId,
+    // };
+
+    // await this.cacheManager.set('test_slot', testJson, 3600000);
+
+    return savedSlot;
   }
 
   // ✅ Paginated and filtered slots list
@@ -114,5 +137,17 @@ export class SlotsService {
 
     await this.slotModel.findByIdAndDelete(id);
     return { message: 'Slot deleted successfully' };
+  }
+
+  async getStudents() {
+    const user = {
+      id: 2,
+      name: 'ram',
+      role: 'admin',
+    };
+
+    await this.redis.set('user:2', JSON.stringify(user));
+
+    return { message: 'User saved to Redis!' };
   }
 }
