@@ -49,9 +49,4 @@ export class SlotsController {
     const userId = req.user._id;
     return this.slotsService.updateSlot(id, updateSlotDto, userId);
   }
-
-  @Get('std')
-  async getStudents() {
-    return this.slotsService.getStudents();
-  }
 }
