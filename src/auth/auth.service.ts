@@ -5,37 +5,37 @@ import { UserDocument } from 'src/users/users.schema';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly usersService: UsersService,
-        private readonly jwtService: JwtService
-    ) { }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async validateUser(email: string, password: string): Promise<UserDocument> {
-        const user = await this.usersService.findByEmail(email);
+  async validateUser(email: string, password: string): Promise<UserDocument> {
+    const user = await this.usersService.findByEmail(email);
 
-        if (!user) throw new UnauthorizedException('invalid credentials')
+    if (!user) throw new UnauthorizedException('invalid credentials');
 
-        // const isMatch = await bcrypt.compare(password, user.password)
-        const isMatch = password === user.password
-        if (!isMatch) throw new UnauthorizedException('invalid credentials')
+    // const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = password === user.password;
+    if (!isMatch) throw new UnauthorizedException('invalid credentials');
 
-        return user;
-    }
+    return user;
+  }
 
-    async login(email: string, password: string) {
-        const user = await this.validateUser(email, password)
+  async login(email: string, password: string) {
+    const user = await this.validateUser(email, password);
 
-        const payload = { sub: user._id, email: user.email }
-        const token = this.jwtService.sign(payload);
+    const payload = { sub: user._id, email: user.email };
+    const token = this.jwtService.sign(payload);
 
-        return {
-            access_token: token,
-            user: {
-                id: user._id,
-                name: user?.name,
-                email: user?.email,
-
-            }
-        }
-    }
+    return {
+      access_token: token,
+      user: {
+        id: user._id,
+        name: user?.name,
+        email: user?.email,
+        role: user?.role,
+      },
+    };
+  }
 }
