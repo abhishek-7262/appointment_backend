@@ -4,6 +4,7 @@ import { BookingsService } from './bookings.service';
 import { BookingsController } from './bookings.controller';
 import { Booking, BookingSchema } from './bookings.schema';
 import { Slot, SlotSchema } from 'src/slots/slots.schema';
+import { QueueModule } from 'src/queues/queue.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { Slot, SlotSchema } from 'src/slots/slots.schema';
       { name: Booking.name, schema: BookingSchema },
       { name: Slot.name, schema: SlotSchema },
     ]),
+    QueueModule,
   ],
   controllers: [BookingsController],
   providers: [BookingsService],

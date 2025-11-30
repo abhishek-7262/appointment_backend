@@ -7,12 +7,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingDocument } from './bookings.schema';
 import { Slot, SlotDocument } from 'src/slots/slots.schema';
+import { EmailQueue } from 'src/queues/email.queue';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
     @InjectModel(Slot.name) private slotModel: Model<SlotDocument>,
+    private readonly emailQueue: EmailQueue,
   ) {}
 
   // ✅ Book a slot
@@ -44,6 +46,36 @@ export class BookingsService {
     // Mark slot as booked
     slot.isBooked = true;
     await slot.save();
+
+    // Send email to admin immediately
+    await this.emailQueue.sendAdminMail({
+      bookingId: booking._id,
+      userId,
+      slotId,
+      clinicId: slot.createdBy,
+      slotDate: slot.date,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    });
+
+    // Schedule user reminder (1 hour before slot time)
+    const appointmentDate = new Date(slot.date);
+    const appointmentStart = new Date(
+      appointmentDate.toDateString() + ' ' + slot.startTime,
+    );
+
+    const reminderTime = new Date(appointmentStart.getTime() - 60 * 60 * 1000);
+
+    await this.emailQueue.scheduleUserReminder(
+      {
+        bookingId: booking._id,
+        userId,
+        userEmail: booking['myemailg61@gmail.com'], // ensure you store user email
+        slotDate: slot.date,
+        startTime: slot.startTime,
+      },
+      reminderTime,
+    );
 
     return booking;
   }

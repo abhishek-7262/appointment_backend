@@ -8,6 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SlotsModule } from './slots/slots.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { RedisModule } from './redis/redis.module';
+import { QueueModule } from './queues/queue.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     SlotsModule,
     BookingsModule,
+    QueueModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
