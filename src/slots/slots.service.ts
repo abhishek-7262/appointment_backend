@@ -20,34 +20,51 @@ export class SlotsService {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
-  // ✅ Create single slot (for a specific date/time)
+  // Create multiple slots for the same date
   async createSlot(
     createSlotDto: CreateSlotDto,
     userId: string,
-  ): Promise<Slot> {
-    const { date, startTime, endTime } = createSlotDto;
+  ): Promise<Slot[]> {
+    const { date, duration, slots } = createSlotDto;
 
-    // Prevent duplicate slot creation for same time
-    const existing = await this.slotModel.findOne({
-      date,
-      startTime,
-      createdBy: userId,
-    });
-    if (existing) {
-      throw new BadRequestException('Slot for this time already exists');
+    if (!slots || slots.length === 0) {
+      throw new BadRequestException('Slots array cannot be empty');
     }
 
-    const newSlot = new this.slotModel({
-      ...createSlotDto,
-      createdBy: userId,
-    });
+    const savedSlots: Slot[] = [];
 
-    const savedSlot = await newSlot.save();
+    for (const slot of slots) {
+      const { startTime, endTime } = slot;
 
-    //redis
-    await this.redis.set(`slot:${savedSlot._id}`, JSON.stringify(savedSlot));
+      // Check for duplicate slot for the same user/date/time
+      const existing = await this.slotModel.findOne({
+        date,
+        startTime,
+        createdBy: userId,
+      });
 
-    return savedSlot;
+      if (existing) {
+        throw new BadRequestException(
+          `Slot from ${startTime} already exists for this date`,
+        );
+      }
+
+      const newSlot = new this.slotModel({
+        date,
+        duration,
+        startTime,
+        endTime,
+        createdBy: userId,
+      });
+
+      const saved = await newSlot.save();
+      savedSlots.push(saved);
+
+      // Cache in Redis
+      await this.redis.set(`slot:${saved._id}`, JSON.stringify(saved));
+    }
+
+    return savedSlots;
   }
 
   //  Paginated and filtered slots list
